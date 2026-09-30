@@ -29,3 +29,19 @@ def list_runs(limit=50):
         return out
     finally:
         c.close()
+
+def get_run(rid):
+    """单条用纸档：只读落库 result_json，order_m 钉住写入值，不按新标称重托。"""
+    c = connect()
+    try:
+        row = c.execute(
+            """SELECT r.*, b.name box_name FROM calc_runs r LEFT JOIN boxes b ON b.id=r.box_id WHERE r.id=?""",
+            (rid,),
+        ).fetchone()
+        if not row:
+            return None
+        d = dict(row)
+        d["result"] = json.loads(d.pop("result_json"))
+        return d
+    finally:
+        c.close()
